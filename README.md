@@ -1,4 +1,4 @@
-# movein - make yourself at $HOME
+# movein - make yourself @ $HOME
 
 This is a Bash script intended to automate 'bootstrapping' of a workable development environment on a new system. The genesis of the new system could be a brand new physical PC or laptop, a virtual machine, or a Docker container; really doesn't matter. Your new environment just has a few pre-requisites to run movein:
 
@@ -22,6 +22,5 @@ The movein process should leave you with:
 
 ## TODO
 
-- ViM and TMux config deployment
 - additional distro-specific setup in localized .rc
 - installation of other helpful apps/tools, using appropriate distro package manager 

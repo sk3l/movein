@@ -69,16 +69,28 @@ if [[ ! -d $SRCPATH/vim-conf ]]; then
     fi
 fi
 
+echo -e "\n~~~ Installing ViM config ~~~\n"
+
+[[ ! -d $HOME/.vim ]] && mkdir $HOME/.vim
+
+cp $SRCPATH/vim-conf/conf/.vimrc $HOME 
+cp -R $SRCPATH/vim-conf/conf $HOME/.vim/
+cp -R $SRCPATH/vim-conf/colors $HOME/.vim/
+
+echo -e "\n~~~ Installing tmux config ~~~\n"
+
+cp $SRCPATH/tmux-conf/.tmux.conf $HOME 
+
 echo -e "\n~~~ Installing shell resource files ~~~\n"
 
-cp $SRCPATH/sk3lshell/dot-files/.bashrc ~/
+cp $SRCPATH/sk3lshell/dot-files/.bashrc $HOME 
 
 if [[ -f "$SRCPATH/sk3lshell/dot-files/.bashrc_local_$TYPE" ]]; then
     echo -e "* Found distro-specific shell resource file for $TYPE; installing *"
     cp "$SRCPATH/sk3lshell/dot-files/.bashrc_local_$TYPE" $HOME/
 fi
 
-source ~/.bashrc
+source $HOME/.bashrc
 
 echo $(date) > $HOME/.movedin
 echo -e "\nAll moved in... \n"
