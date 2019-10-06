@@ -2,17 +2,22 @@
 
 function usage {
 	echo -e "\nUsage:\n"
-	echo -e "    movein.sh [-d distro] [-l logfile] <script1> <script2> ..."
+	echo -e "    movein.sh [-d distro] [-l logfile] [-u user] <script1> <script2> ..."
 	echo -e "\nWhere:"
-    echo -e "   -d distro = linux distribution to use (don't prompt)"
+    echo -e "   -d distro  = linux distribution to use (don't prompt)"
     echo -e "               supported distros: 'ubuntu', 'rhel', 'centos'"
-    echo -e "   <scriptN> = movein scripts to execute"
+    echo -e "   -l logfile = location of movein log" 
+    echo -e "   -u user    = name of base movein user" 
+    echo -e "   <scriptN>  = movein scripts to execute"
 }
 
-# Parse cmd-line arguments
+# Variables
 LOG=/var/log/movein-$(date "+%Y%m%d_%H_%M_%S")
 DISTRO=""
-while getopts "d:l:" option; do
+
+
+# Parse cmd-line arguments
+while getopts "d:l:u:" option; do
     case "${option}" in
     d)
         DISTRO=${OPTARG}
@@ -20,12 +25,16 @@ while getopts "d:l:" option; do
     l)
         LOG=${OPTARG}
         ;;
+    u)
+        BASE_USER=${OPTARG}
+        ;;
     \?)
         usage
         exit 1
         ;;
     esac
 done
+shift "$((OPTIND-1))"
 
 # Write output to the log file and stdout
 exec &> >(tee -a "$LOG")
@@ -57,76 +66,27 @@ else
     exit 1 
 fi
 
-echo -e "\n~~~ Verifying Git ~~~\n"
+# Source user baseline script
+echo -e "\n~~~ Sourcing base user ~~~\n"
+source crates/base/user
 
-GIT=$(which git)
-if [[ $? -ne 0 ]]; then
-	echo -e "No Git detected; check and retry"
-	exit 11 
-fi
-GITVER=$(git --version)
-echo -e "Found Git, $GITVER"
+# Source per-distro baseline script
+echo -e "\n~~~ Sourcing base env for ${OS_TYPE}  ~~~\n"
+source crates/${OS_TYPE}/${OS_TYPE}_base
 
-echo -e "* Setting .gitconfig *"
-$GIT config --global --add user.name "Michael Skelton"
-$GIT config --global --add user.email "mskelton@bloomberg.net" # TO DO ~> parameterize
+# Custom scripts from argv are sourced here
+echo -e "\n~~~ Sourcing scripts from command-line   ~~~\n"
 
-if [[ ! -d $HOME/Code ]]; then
-	echo -e "~~~ Creating ~/Code directory ~~~"
-	mkdir -p $HOME/Code/{linux,sk3l}
-fi
+#echo -e "\n~~~ Installing shell resource files ~~~\n"
 
-GITHUB=https://github.com/sk3l
+#cp $SRCPATH/sk3lshell/dot-files/.bashrc $HOME 
 
-SRCPATH="$HOME/Code/sk3l"
-echo -e "\n~~~ Pulling down source repos ~~~"
+#if [[ -f "$SRCPATH/sk3lshell/dot-files/.bashrc_local_$TYPE" ]]; then
+#    echo -e "* Found distro-specific shell resource file for $TYPE; installing *"
+#    cp "$SRCPATH/sk3lshell/dot-files/.bashrc_local_$TYPE" $HOME/
+#fi
 
-if [[ ! -d $SRCPATH/sk3lshell ]]; then
-    echo -e "\n* cloning sk3lshell *"
-    if ! $GIT clone -c http.sslVerify=false $GITHUB/sk3lshell $SRCPATH/sk3lshell; then
-	    echo -e "Unable to clone sk3lshell; aborting"
-	    return 1 
-    fi
-fi
-
-if [[ ! -d $SRCPATH/tmux-conf ]]; then
-    echo -e "\n* cloning tmux-conf*"
-    if ! $GIT clone -c http.sslVerify=false $GITHUB/tmux-conf $SRCPATH/tmux-conf; then
-	    echo -e "Unable to clone tmux-conf; aborting"
-	    return 1 
-    fi
-fi
-
-if [[ ! -d $SRCPATH/vim-conf ]]; then
-    echo -e "\n* cloning vim-conf*"
-    if ! $GIT clone -c http.sslVerify=false $GITHUB/vim-conf $SRCPATH/vim-conf; then
-	    echo -e "Unable to clone vim-conf; aborting"
-	    return 1 
-    fi
-fi
-
-echo -e "\n~~~ Installing ViM config ~~~\n"
-
-[[ ! -d $HOME/.vim ]] && mkdir $HOME/.vim
-
-cp $SRCPATH/vim-conf/conf/.vimrc $HOME 
-cp -R $SRCPATH/vim-conf/conf $HOME/.vim/
-cp -R $SRCPATH/vim-conf/colors $HOME/.vim/
-
-echo -e "\n~~~ Installing tmux config ~~~\n"
-
-cp $SRCPATH/tmux-conf/.tmux.conf $HOME 
-
-echo -e "\n~~~ Installing shell resource files ~~~\n"
-
-cp $SRCPATH/sk3lshell/dot-files/.bashrc $HOME 
-
-if [[ -f "$SRCPATH/sk3lshell/dot-files/.bashrc_local_$TYPE" ]]; then
-    echo -e "* Found distro-specific shell resource file for $TYPE; installing *"
-    cp "$SRCPATH/sk3lshell/dot-files/.bashrc_local_$TYPE" $HOME/
-fi
-
-source $HOME/.bashrc
+#source $HOME/.bashrc
 
 echo $(date) > $HOME/.movedin
-echo -e "\nAll moved in... \n"
+echo -e "\nMovein has completed\n"

@@ -1,0 +1,22 @@
+
+if [[ ! -z $BASE_USER ]]; then
+    BASE_USER=mskelton
+fi
+
+# Create base user 
+echo -e "\n~~~ Creating base uer login ${BASE_USER}  ~~~\n"
+if getent passwd ${BASE_USER} > /dev/null; then
+    echo -e "Base user ${BASE_USER} already exists"
+else
+    if ! useradd -m -s /bin/bash $BASE_USER > /dev/null; then
+        echo -e "Failed creating base user ${BASE_USER}"
+        exit 1
+    fi     
+fi
+
+# Add user to admin/wheel 
+echo -e "\n~~~ Adding base user ${BASE_USER} to admin  ~~~\n"
+if ! usermod -a -G wheel $BASE_USER; then
+    echo -e "Failed adding base user ${BASE_USER} groups"
+    exit 1
+fi     

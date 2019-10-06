@@ -1,54 +1,9 @@
-#!/bin/bash
-
-function usage {
-	echo -e "\nUsage:\n"
-	echo -e "    movein.sh [-d distro] <script1> <script2> ..."
-	echo -e "\nWhere:"
-    echo -e "   -d distro = linux distribution"
-    echo -e "   <scriptN> = movein scripts to execute"
-}
-
-# Parse cmd-line arguments
-DISTRO=""
-while getopts "d:" option; do
-    case "${option}" in
-    d)
-        DISTRO=${OPTARG}
-        ;;
-    \?)
-        usage
-        exit 1
-        ;;
-    esac
-done
-
-echo -e "\nStarting to move in... \n"
-if [[ -f $HOME/.movedin ]]; then
-	echo -e "Already moved in; returning\n"
-	return 0
-fi
-
-echo -e "~~~ Examining host Linux distro ~~~"
-
-TYPE=""
-VERSION=""
-if [[ -f /etc/redhat-release ]]; then
-	echo -e "* Detected Red Hat distro *"
-	TYPE="rhel"
-elif [[ $(lsb_release) ]]; then
-	echo -e " * Detected Ubuntu distro *"
-	TYPE="ubuntu"
-else
-	echo -e "* Detected unkniwn distro *"
-	TYPE="unknown"
-fi
-
-echo -e "\n~~~ Setting up Git ~~~\n"
+echo -e "\n~~~ Verifying Git ~~~\n"
 
 GIT=$(which git)
 if [[ $? -ne 0 ]]; then
-	echo -e "No Git detected; install and retry"
-	return 1 
+	echo -e "No Git detected; check and retry"
+	exit 11 
 fi
 GITVER=$(git --version)
 echo -e "Found Git, $GITVER"
@@ -112,7 +67,3 @@ if [[ -f "$SRCPATH/sk3lshell/dot-files/.bashrc_local_$TYPE" ]]; then
     cp "$SRCPATH/sk3lshell/dot-files/.bashrc_local_$TYPE" $HOME/
 fi
 
-source $HOME/.bashrc
-
-echo $(date) > $HOME/.movedin
-echo -e "\nAll moved in... \n"
