@@ -1,0 +1,9 @@
+[submodule "modules/sk3lshell"]
+	path = modules/sk3lshell
+	url = https://github.com/sk3l/sk3lshell
+[submodule "modules/vim-confl"]
+	path = modules/vim-confl
+	url = https://github.com/sk3l/vim-conf
+[submodule "modules/tmux-conf"]
+	path = modules/tmux-conf
+	url = https://github.com/sk3l/tmux-conf
