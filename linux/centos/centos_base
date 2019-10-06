@@ -1,5 +1,27 @@
 #!/bin/bash
 
+function usage {
+	echo -e "\nUsage:\n"
+	echo -e "    movein.sh [-d distro] <script1> <script2> ..."
+	echo -e "\nWhere:"
+    echo -e "   -d distro = linux distribution"
+    echo -e "   <scriptN> = movein scripts to execute"
+}
+
+# Parse cmd-line arguments
+DISTRO=""
+while getopts "d:" option; do
+    case "${option}" in
+    d)
+        DISTRO=${OPTARG}
+        ;;
+    \?)
+        usage
+        exit 1
+        ;;
+    esac
+done
+
 echo -e "\nStarting to move in... \n"
 if [[ -f $HOME/.movedin ]]; then
 	echo -e "Already moved in; returning\n"

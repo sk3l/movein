@@ -1,0 +1,10 @@
+
+echo -e "\n~~~ Enabling Red Hat SCL repository  ~~~\n"
+yum-config-manager --enable rhel-server-rhscl-7-rpms
+
+echo -e "\n~~~ Enabling Red Hat EPEL repository  ~~~\n"
+yum -y install epel-release
+
+return 0 
+
+
