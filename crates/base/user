@@ -1,22 +1,37 @@
 
-if [[ ! -z $BASE_USER ]]; then
+if [[ -z "$BASE_USER" ]]; then
     BASE_USER=mskelton
 fi
 
-# Create base user 
-echo -e "\n~~~ Creating base uer login ${BASE_USER}  ~~~\n"
-if getent passwd ${BASE_USER} > /dev/null; then
-    echo -e "Base user ${BASE_USER} already exists"
-else
-    if ! useradd -m -s /bin/bash $BASE_USER > /dev/null; then
-        echo -e "Failed creating base user ${BASE_USER}"
-        exit 1
-    fi     
+if [[ -z "$BASE_HOME" ]]; then
+    BASE_HOME=/home/$BASE_USER
 fi
 
-# Add user to admin/wheel 
-echo -e "\n~~~ Adding base user ${BASE_USER} to admin  ~~~\n"
+# Create base user
+echo -e "   - Creating base user login ${BASE_USER}"
+if getent passwd ${BASE_USER} > /dev/null; then
+    echo -e "   - Base user ${BASE_USER} already exists"
+else
+    if ! useradd -m -s /bin/bash $BASE_USER > /dev/null; then
+        echo -e "!!! Failed creating base user ${BASE_USER} !!!\n"
+        exit 1
+    fi
+fi
+
+# Add user to groups
+echo -e "   - Adding base user ${BASE_USER} to wheel"
 if ! usermod -a -G wheel $BASE_USER; then
-    echo -e "Failed adding base user ${BASE_USER} groups"
+    echo -e "!!! Failed adding base user ${BASE_USER} groups !!!\n"
     exit 1
-fi     
+fi
+
+# Configure user's shell
+echo -e "   - Configuring base user's shell"
+
+cp modules/sk3lshell/dot-files/.bashrc $BASE_HOME
+
+if [[ -f "modules/sk3lshell/dot-files/.bashrc_local_$OS_TYPE" ]]; then
+    echo -e "* Found distro-specific shell resource file for $OS_TYPE; installing *"
+    cp "modules/sk3lshell/dot-files/.bashrc_local_$OS_TYPE" $BASE_HOME/
+fi
+

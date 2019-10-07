@@ -16,4 +16,3 @@ cat <<EOF> /etc/profile.d/scl_enable.sh
 #!/bin/bash
 source scl_source enable rh-git29
 EOF
-

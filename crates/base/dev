@@ -1,69 +1,79 @@
+if [[ -z "$BASE_USER" ]]; then
+	echo -e "Required variable BASE_USER unset; aborting"
+	exit 1
+fi
+
+if [[ -z "$BASE_HOME" ]]; then
+	echo -e "Required variable BASE_HOME unset; aborting"
+	exit 1
+fi
+
 echo -e "\n~~~ Verifying Git ~~~\n"
 
 GIT=$(which git)
 if [[ $? -ne 0 ]]; then
 	echo -e "No Git detected; check and retry"
-	exit 11 
+	exit 1
 fi
 GITVER=$(git --version)
 echo -e "Found Git, $GITVER"
 
+if [[ -z "$GIT_USER" ]]; then
+    GIT_USER="Michael Skelton"
+fi
+
+if [[ -z "$GIT_EMAIL" ]]; then
+    GIT_USER="skelton.michael@gmail.com"
+fi
+
 echo -e "* Setting .gitconfig *"
-$GIT config --global --add user.name "Michael Skelton"
-$GIT config --global --add user.email "mskelton@bloomberg.net" # TO DO ~> parameterize
+sudo -u $BASE_USER $GIT config --global --add user.name $GIT_USER
+sudo -u $BASE_USER $GIT config --global --add user.email $GIT_EMAIL
 
-if [[ ! -d $HOME/Code ]]; then
+if [[ ! -d $BASE_HOME/Code ]]; then
 	echo -e "~~~ Creating ~/Code directory ~~~"
-	mkdir -p $HOME/Code/{linux,sk3l}
+	sudo -u $BASE_USER mkdir -p $BASE_HOME/Code
 fi
 
-GITHUB=https://github.com/sk3l
+#GITHUB=https://github.com/sk3l
 
-SRCPATH="$HOME/Code/sk3l"
-echo -e "\n~~~ Pulling down source repos ~~~"
+#SRCPATH="$HOME/Code/sk3l"
+#echo -e "\n~~~ Pulling down source repos ~~~"
 
-if [[ ! -d $SRCPATH/sk3lshell ]]; then
-    echo -e "\n* cloning sk3lshell *"
-    if ! $GIT clone -c http.sslVerify=false $GITHUB/sk3lshell $SRCPATH/sk3lshell; then
-	    echo -e "Unable to clone sk3lshell; aborting"
-	    return 1 
-    fi
-fi
+#if [[ ! -d $SRCPATH/sk3lshell ]]; then
+#    echo -e "\n* cloning sk3lshell *"
+#    if ! $GIT clone -c http.sslVerify=false $GITHUB/sk3lshell $SRCPATH/sk3lshell; then
+#	    echo -e "Unable to clone sk3lshell; aborting"
+#	    return 1
+#    fi
+#fi
 
-if [[ ! -d $SRCPATH/tmux-conf ]]; then
-    echo -e "\n* cloning tmux-conf*"
-    if ! $GIT clone -c http.sslVerify=false $GITHUB/tmux-conf $SRCPATH/tmux-conf; then
-	    echo -e "Unable to clone tmux-conf; aborting"
-	    return 1 
-    fi
-fi
-
-if [[ ! -d $SRCPATH/vim-conf ]]; then
-    echo -e "\n* cloning vim-conf*"
-    if ! $GIT clone -c http.sslVerify=false $GITHUB/vim-conf $SRCPATH/vim-conf; then
-	    echo -e "Unable to clone vim-conf; aborting"
-	    return 1 
-    fi
-fi
+#if [[ ! -d $SRCPATH/tmux-conf ]]; then
+#    echo -e "\n* cloning tmux-conf*"
+#    if ! $GIT clone -c http.sslVerify=false $GITHUB/tmux-conf $SRCPATH/tmux-conf; then
+#	    echo -e "Unable to clone tmux-conf; aborting"
+#	    return 1
+#    fi
+#fi
+#
+#if [[ ! -d $SRCPATH/vim-conf ]]; then
+#    echo -e "\n* cloning vim-conf*"
+#    if ! $GIT clone -c http.sslVerify=false $GITHUB/vim-conf $SRCPATH/vim-conf; then
+#	    echo -e "Unable to clone vim-conf; aborting"
+#	    return 1
+#    fi
+#fi
 
 echo -e "\n~~~ Installing ViM config ~~~\n"
 
-[[ ! -d $HOME/.vim ]] && mkdir $HOME/.vim
+[[ ! -d $BASE_HOME/.vim ]] && mkdir $BASE_HOME/.vim
 
-cp $SRCPATH/vim-conf/conf/.vimrc $HOME 
-cp -R $SRCPATH/vim-conf/conf $HOME/.vim/
-cp -R $SRCPATH/vim-conf/colors $HOME/.vim/
+cp modules/vim-conf/conf/.vimrc $BASE_HOME
+cp -R modules/vim-conf/conf $BASE_HOME/.vim/
+cp -R modules/vim-conf/colors $BASE_HOME/.vim/
 
 echo -e "\n~~~ Installing tmux config ~~~\n"
 
-cp $SRCPATH/tmux-conf/.tmux.conf $HOME 
+cp modules/tmux-conf/.tmux.conf $BASE_HOME
 
-echo -e "\n~~~ Installing shell resource files ~~~\n"
-
-cp $SRCPATH/sk3lshell/dot-files/.bashrc $HOME 
-
-if [[ -f "$SRCPATH/sk3lshell/dot-files/.bashrc_local_$TYPE" ]]; then
-    echo -e "* Found distro-specific shell resource file for $TYPE; installing *"
-    cp "$SRCPATH/sk3lshell/dot-files/.bashrc_local_$TYPE" $HOME/
-fi
 

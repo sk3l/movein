@@ -6,15 +6,14 @@ function usage {
 	echo -e "\nWhere:"
     echo -e "   -d distro  = linux distribution to use (don't prompt)"
     echo -e "               supported distros: 'ubuntu', 'rhel', 'centos'"
-    echo -e "   -l logfile = location of movein log" 
-    echo -e "   -u user    = name of base movein user" 
+    echo -e "   -l logfile = location of movein log"
+    echo -e "   -u user    = name of base movein user"
     echo -e "   <scriptN>  = movein scripts to execute"
 }
 
 # Variables
 LOG=/var/log/movein-$(date "+%Y%m%d_%H_%M_%S")
 DISTRO=""
-
 
 # Parse cmd-line arguments
 while getopts "d:l:u:" option; do
@@ -39,7 +38,7 @@ shift "$((OPTIND-1))"
 # Write output to the log file and stdout
 exec &> >(tee -a "$LOG")
 
-echo -e "\n~~~ Starting movein... ~~~\n"
+echo -e "\n====== Starting movein ======"
 if [[ -f $HOME/.movedin ]]; then
 	echo -e "Already moved in; returning\n"
 	return 0
@@ -53,7 +52,7 @@ if [[ -f /etc/redhat-release ]]; then
     if grep 'CentOS' /etc/redhat-release; then
         echo -e "* Detected CentOS  distro *"
 	    OS_TYPE="centos"
-    else 
+    else
         echo -e "* Detected Red Hat Enterprise Linux distro *"
 	    OS_TYPE="rhel"
     fi
@@ -63,7 +62,7 @@ elif [[ $(lsb_release) ]]; then
 else
 	echo -e "!!! Detected unknown distro!!!"
     echo -e "Aborting movein due to unrecognized OS"
-    exit 1 
+    exit 1
 fi
 
 # Source user baseline script
@@ -75,18 +74,11 @@ echo -e "\n~~~ Sourcing base env for ${OS_TYPE}  ~~~\n"
 source crates/${OS_TYPE}/${OS_TYPE}_base
 
 # Custom scripts from argv are sourced here
-echo -e "\n~~~ Sourcing scripts from command-line   ~~~\n"
-
-#echo -e "\n~~~ Installing shell resource files ~~~\n"
-
-#cp $SRCPATH/sk3lshell/dot-files/.bashrc $HOME 
-
-#if [[ -f "$SRCPATH/sk3lshell/dot-files/.bashrc_local_$TYPE" ]]; then
-#    echo -e "* Found distro-specific shell resource file for $TYPE; installing *"
-#    cp "$SRCPATH/sk3lshell/dot-files/.bashrc_local_$TYPE" $HOME/
-#fi
-
-#source $HOME/.bashrc
+echo -e "\n~~~ Sourcing scripts from command-line  ~~~\n"
+for SCRIPT in $@; do
+    echo -e "Sourcing $SCRIPT"
+    source $SCRIPT
+done
 
 echo $(date) > $HOME/.movedin
-echo -e "\nMovein has completed\n"
+echo -e "\n====== Movein has completed ======\n"
