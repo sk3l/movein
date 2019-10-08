@@ -1,15 +1,15 @@
 
 # Install SCL, or fail
-echo -e "   - Enabling Red Hat SCL repository"
-if ! yum-config-manager --enable rhel-server-rhscl-7-rpms; then
-    echo -e "!!! Failed enabling Red Hat SCL !!!\n"
+log_info "    - Enabling Red Hat SCL repository"
+if ! yum install -y centos-release-scl; then
+    log_error "!!! Failed enabling Red Hat SCL !!!\n"
     exit 1
 fi
 
 # Install EPEL, or fail
-echo -e " - Enabling Red Hat EPEL repository"
-if ! yum -y install epel-release; then
-    echo -e "!!! Failed enabling Red Hat EPEL !!!\n"
+log_info "    - Enabling Red Hat EPEL repository"
+if ! yum install -y epel-release; then
+    log_error "!!! Failed enabling Red Hat EPEL !!!\n"
     exit 1
 fi
 

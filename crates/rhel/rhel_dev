@@ -1,10 +1,25 @@
 
-echo -e "\n~~~ Enabling Red Hat SCL repository  ~~~\n"
-yum-config-manager --enable rhel-server-rhscl-7-rpms
+info "\n~~~ Installing CentOS dev packages  ~~~\n"
+yum install -y \
+    cmake3 \
+    devtoolset-7-gcc-c++ \
+    devtoolset-7-gdb \
+    llvm-toolset-7-clang \
+    llvm-toolset-7-clang-tools-extra \
+    python36 \
+    python36-pip \
+    python36-setuptools \
+    rh-git29-git \
 
-echo -e "\n~~~ Enabling Red Hat EPEL repository  ~~~\n"
-yum -y install epel-release
+if [[ $? -ne 0 ]];then
+    error "!!! Failed installing CentOS dev packages; aborting !!!"
+    exit 1
+fi
 
-return 0 
+info "\n~~~ Activate SCL packages  ~~~\n"
+cat <<EOF> /etc/profile.d/scl_enable.sh
+#!/bin/bash
+source scl_source enable rh-git29
+EOF
 
-
+. /opt/rh/rh-git29/enable
