@@ -67,7 +67,7 @@ if [[ -f /etc/redhat-release ]]; then
         log_info "* Detected Red Hat Enterprise Linux distro *"
 	    OS_TYPE="rhel"
     fi
-elif [[ $(lsb_release) ]]; then
+elif lsb_release -a 2>&1 | grep -q "Ubuntu"; then
 	log_info "* Detected Ubuntu distro *"
 	OS_TYPE="ubuntu"
 else
