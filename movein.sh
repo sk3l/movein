@@ -2,14 +2,16 @@
 
 # Utility functions
 function usage {
+	echo -e "\nmovein - Make Yourself @ \$HOME\n"
+    echo -e "\tA provisioning script for development environments"
 	echo -e "\nUsage:\n"
-	echo -e "    movein.sh [-d distro] [-l logfile] [-u user] <script1> <script2> ..."
+	echo -e "    movein.sh [-h] [-l logfile] [-u user] <script1> <script2> ..."
 	echo -e "\nWhere:"
-    echo -e "   -d distro  = linux distribution to use (don't prompt)"
-    echo -e "               supported distros: 'ubuntu', 'rhel', 'centos'"
-    echo -e "   -l logfile = location of movein log"
-    echo -e "   -u user    = name of base movein user"
-    echo -e "   <scriptN>  = movein scripts to execute"
+    echo -e "   -h         = show this usage"
+    echo -e "   -l logfile = location of movein log (default=/var/log)"
+    echo -e "   -u user    = name of base movein user (default=\$USER)"
+    echo -e "   <scriptN>  = path to movein script to source"
+    echo -e ""
 }
 
 NO_COLOR="\033[0m"
@@ -29,7 +31,7 @@ LOG=/var/log/movein-$(date "+%Y%m%d_%H_%M_%S")
 DISTRO=""
 
 # Parse cmd-line arguments
-while getopts "d:l:u:" option; do
+while getopts "d:hl:u:" option; do
     case "${option}" in
     d)
         DISTRO=${OPTARG}
@@ -40,7 +42,7 @@ while getopts "d:l:u:" option; do
     u)
         BASE_USER=${OPTARG}
         ;;
-    \?)
+    h)
         usage
         exit 1
         ;;
@@ -52,10 +54,6 @@ shift "$((OPTIND-1))"
 exec &> >(tee -a "$LOG")
 
 log_info "\n====== Starting movein ======"
-#if [[ -f $HOME/.movedin ]]; then
-#	echo -e "Already moved in; returning\n"
-#	exit 0
-#fi
 
 log_info "\n~~~ Examining host Linux distro ~~~\n"
 
@@ -78,20 +76,10 @@ else
     exit 1
 fi
 
-# Source user baseline script
-log_info "\n~~~ Sourcing base user ~~~\n"
-source crates/base/user
-
-# Source per-distro baseline script
-log_info "\n~~~ Sourcing base env for ${OS_TYPE}  ~~~\n"
-source crates/${OS_TYPE}/${OS_TYPE}_base
-
 # Custom scripts from argv are sourced here
-log_info "\n~~~ Sourcing scripts from command-line  ~~~\n"
 for SCRIPT in $@; do
-    log_info "Sourcing $SCRIPT"
+    log_info "\n~~~ Sourcing script $SCRIPT ~~~\n"
     source $SCRIPT
 done
 
-#echo $(date) > $HOME/.movedin
 log_info "\n====== Movein has completed ======\n"
