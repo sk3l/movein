@@ -21,6 +21,7 @@ log_info "    - Found Git, $GITVER"
 # If running as different user than $BASE_USER, use sudo
 SUDO=""
 if [[ "$USER" -ne "$BASE_USER" ]];then
+    log_info "    - enabling sudo as $BASE_USER"
     SUDO="/bin/sudo -i -u $BASE_USER"    
 fi
 
