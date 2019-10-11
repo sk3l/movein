@@ -1,5 +1,5 @@
 
-log_log_info "\n~~~ Installing CentOS dev packages  ~~~\n"
+log_info "\n~~~ Installing CentOS dev packages  ~~~\n"
 yum install -y \
     cmake3 \
     devtoolset-7-gcc-c++ \
@@ -12,11 +12,11 @@ yum install -y \
     rh-git29-git \
 
 if [[ $? -ne 0 ]];then
-    log_log_error "!!! Failed installing CentOS dev packages; aborting !!!"
+    log_error "!!! Failed installing CentOS dev packages; aborting !!!"
     exit 1
 fi
 
-log_log_info "\n~~~ Activate SCL packages  ~~~\n"
+log_info "\n~~~ Activate SCL packages  ~~~\n"
 cat <<EOF> /etc/profile.d/scl_enable.sh
 #!/bin/bash
 source scl_source enable rh-git29

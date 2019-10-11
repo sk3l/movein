@@ -20,6 +20,14 @@ The movein process should leave you with:
 - a localized distro-specific .rc file
 - a .gitconfig
 
+## Environment variables influencing movein
+
+- BASE_USER   - main user login to create
+- BASE_HOME   - main user login's $HOME folder
+- BASE_GROUPS - comma-seperated set of groups for BASE_USER
+- GIT_USER    - user name to assign to git config
+- GIT_EMAIL   - user email to assign to git config
+
 ## TODO
 
 - additional distro-specific setup in localized .rc

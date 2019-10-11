@@ -18,6 +18,12 @@ fi
 GITVER=$(git --version)
 log_info "    - Found Git, $GITVER"
 
+# If running as different user than $BASE_USER, use sudo
+SUDO=""
+if [[ "$USER" -ne "$BASE_USER" ]];then
+    SUDO="/bin/sudo -i -u $BASE_USER"    
+fi
+
 if [[ -z "$GIT_USER" ]]; then
     GIT_USER="Michael Skelton"
 fi
@@ -27,23 +33,23 @@ if [[ -z "$GIT_EMAIL" ]]; then
 fi
 
 log_info "    - Setting .gitconfig"
-/bin/sudo -u $BASE_USER $GIT config --global --add user.name "$GIT_USER"
-/bin/sudo -u $BASE_USER $GIT config --global --add user.email "$GIT_EMAIL"
+$SUDO $GIT config --global --add user.name "$GIT_USER"
+$SUDO $GIT config --global --add user.email "$GIT_EMAIL"
 
 if [[ ! -d $BASE_HOME/Code ]]; then
 	log_info "\n~~~ Creating ~/Code directory ~~~\n"
-	/bin/sudo -u $BASE_USER mkdir -p $BASE_HOME/Code
+	$SUDO mkdir -p $BASE_HOME/Code
 fi
 
 log_info "~~~ Installing ViM config ~~~\n"
 
-[[ ! -d $BASE_HOME/.vim ]] && /bin/sudo -u $BASE_USER mkdir $BASE_HOME/.vim
+[[ ! -d $BASE_HOME/.vim ]] && $SUDO mkdir $BASE_HOME/.vim
 
-/bin/sudo -u $BASE_USER cp modules/vim-conf/conf/.vimrc $BASE_HOME
-/bin/sudo -u $BASE_USER cp -R modules/vim-conf/conf $BASE_HOME/.vim/
-/bin/sudo -u $BASE_USER cp -R modules/vim-conf/colors $BASE_HOME/.vim/
+$SUDO cp modules/vim-conf/conf/.vimrc $BASE_HOME
+$SUDO cp -R modules/vim-conf/conf $BASE_HOME/.vim/
+$SUDO cp -R modules/vim-conf/colors $BASE_HOME/.vim/
 
 log_info "~~~ Installing tmux config ~~~\n"
 
-/bin/sudo -u $BASE_USER cp modules/tmux-conf/.tmux.conf $BASE_HOME
+$SUDO cp modules/tmux-conf/.tmux.conf $BASE_HOME
 

@@ -2,16 +2,16 @@
 log_info "\n~~~ Installing Ubuntu dev repositories ~~~\n" 
 
 if ! add-apt-repository "deb http://apt.llvm.org/disco/ llvm-toolchain-disco main";then
-    log_log_error "!!! Failed installing Ubuntu dev repo LLVM; aborting !!!"
+    log_error "!!! Failed installing Ubuntu dev repo LLVM; aborting !!!"
     exit 1
 fi
 
 if ! add-apt-repository "deb-src http://apt.llvm.org/disco/ llvm-toolchain-disco main";then
-    log_log_error "!!! Failed installing Ubuntu dev repo LLVM; aborting !!!"
+    log_error "!!! Failed installing Ubuntu dev repo LLVM; aborting !!!"
     exit 1
 fi
 
-log_log "\n~~~ Installing Ubuntu dev packages  ~~~\n"
+log "\n~~~ Installing Ubuntu dev packages  ~~~\n"
 apt-get install -y \
     cmake \
     build-essential \
@@ -19,7 +19,7 @@ apt-get install -y \
     python3-setuptools \
 
 if [[ $? -ne 0 ]];then
-    log_log_error "!!! Failed installing CentOS dev packages; aborting !!!"
+    log_error "!!! Failed installing CentOS dev packages; aborting !!!"
     exit 1
 fi
 

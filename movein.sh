@@ -5,12 +5,12 @@ function usage {
 	echo -e "\nmovein - Make Yourself @ \$HOME\n"
     echo -e "\tA provisioning script for development environments"
 	echo -e "\nUsage:\n"
-	echo -e "    movein.sh [-h] [-l logfile] [-u user] <script1> <script2> ..."
+	echo -e "    movein.sh [-h] [-l logfile] [-u user] <crate1> <crate2> ..."
 	echo -e "\nWhere:"
     echo -e "   -h         = show this usage"
     echo -e "   -l logfile = location of movein log (default=/var/log)"
     echo -e "   -u user    = name of base movein user (default=\$USER)"
-    echo -e "   <scriptN>  = path to movein script to source"
+    echo -e "   <crateN>   = name of script in ./crates to source"
     echo -e ""
 }
 
@@ -79,7 +79,11 @@ fi
 # Custom scripts from argv are sourced here
 for SCRIPT in $@; do
     log_info "\n~~~ Sourcing script $SCRIPT ~~~\n"
-    source $SCRIPT
+    if [[ ! -f ./crates/$SCRIPT ]]; then
+	    log_error "!!! No crate named $SCRIPT found; skipping !!!"
+    else
+        source ./crates/$SCRIPT
+    fi
 done
 
 log_info "\n====== Movein has completed ======\n"
