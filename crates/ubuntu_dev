@@ -1,6 +1,7 @@
 
 log_info "\n~~~ Installing Ubuntu dev repositories ~~~\n" 
 
+# Clang repos
 if ! add-apt-repository "deb http://apt.llvm.org/disco/ llvm-toolchain-disco main";then
     log_error "!!! Failed installing Ubuntu dev repo LLVM; aborting !!!"
     exit 1
@@ -15,11 +16,15 @@ log "\n~~~ Installing Ubuntu dev packages  ~~~\n"
 apt-get install -y \
     cmake \
     build-essential \
+    clang-format \
+    clang-tidy \
+    clang-tools \
+    clang \
     python3-pip \
     python3-setuptools \
 
 if [[ $? -ne 0 ]];then
-    log_error "!!! Failed installing CentOS dev packages; aborting !!!"
+    log_error "!!! Failed installing Ubuntu dev packages; aborting !!!"
     exit 1
 fi
 
