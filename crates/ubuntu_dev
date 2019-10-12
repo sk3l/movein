@@ -2,15 +2,23 @@
 log_info "\n~~~ Installing Ubuntu dev repositories ~~~\n" 
 
 # Clang repos
+log_info "    - Installing Clang repo GPG key"
+if ! wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -;then
+    log_error "!!! Failed installing GPG keys for Ubuntu dev repo LLVM; aborting !!!"
+    exit 1
+fi
+
+log_info "    - Installing Clang repo"
 if ! add-apt-repository "deb http://apt.llvm.org/disco/ llvm-toolchain-disco main";then
     log_error "!!! Failed installing Ubuntu dev repo LLVM; aborting !!!"
     exit 1
 fi
 
-if ! add-apt-repository "deb-src http://apt.llvm.org/disco/ llvm-toolchain-disco main";then
-    log_error "!!! Failed installing Ubuntu dev repo LLVM; aborting !!!"
-    exit 1
-fi
+#log_info "    - Installing Clang source repo"
+#if ! add-apt-repository "deb-src http://apt.llvm.org/disco/ llvm-toolchain-disco main";then
+#    log_error "!!! Failed installing Ubuntu dev-src repo LLVM; aborting !!!"
+#    exit 1
+#fi
 
 log "\n~~~ Installing Ubuntu dev packages  ~~~\n"
 apt-get install -y \
@@ -22,7 +30,7 @@ apt-get install -y \
     clang \
     python3-pip \
     python3-setuptools \
-
+    vim-nox
 if [[ $? -ne 0 ]];then
     log_error "!!! Failed installing Ubuntu dev packages; aborting !!!"
     exit 1
