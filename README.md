@@ -37,6 +37,14 @@ The idea behind crates are modular scripts that provide customizations, either p
 
 **NOTE**: For executing crates that create \*nix logins or install software, you will need to execute movein as `root` or super-user on most systems.
 
+## Examples
+
+Here is an example movein in which you already have a development user created (under which login your shell is running), you donot have sudo privilege, and you simply wish to prep your .rc and config files:
+
+```
+BASE_USER=$USER BASE_HOME=$HOME ./movein.sh -l /tmp/mskelton8-movein-log.txt base_user base_dev
+```
+
 ## TODO
 
 - build any apps from source (e.g. ViM on Cent/RHEL) for which suitable versions aren't provided in stock distro repos
