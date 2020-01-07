@@ -1,5 +1,18 @@
 
-log_info "\n~~~ Installing Ubuntu dev repositories ~~~\n" 
+log_info "\n~~~ Installing Ubuntu dev repositories ~~~\n"
+
+# Docker repos
+log_info "    - Installing Docker repo GPG key"
+if ! wget -O - https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -;then
+    log_error "!!! Failed installing GPG keys for Ubuntu dev repo Docker; aborting !!!"
+    exit 1
+fi
+
+log_info "    - Installing Docker repo"
+if ! add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable";then
+    log_error "!!! Failed installing Ubuntu dev repo Docker; aborting !!!"
+    exit 1
+fi
 
 # Clang repos
 log_info "    - Installing Clang repo GPG key"
@@ -20,7 +33,13 @@ fi
 #    exit 1
 #fi
 
-log "\n~~~ Installing Ubuntu dev packages  ~~~\n"
+log_info "\n~~~ Updating Ubuntu apt repos  ~~~\n"
+if ! apt-get update; then
+    log_error "!!! Failed updating Ubuntu apt data !!!"
+    exit 1
+fi
+
+log_info "\n~~~ Installing Ubuntu dev packages  ~~~\n"
 apt-get install -y \
     cmake \
     build-essential \
@@ -28,6 +47,8 @@ apt-get install -y \
     clang-tidy \
     clang-tools \
     clang \
+    docker-ce \
+    npm \
     python3-pip \
     python3-setuptools \
     vim-nox

@@ -1,2 +1,14 @@
 
 # Add additional source repos here
+#
+log "\n~~~ Installing Ubuntu base packages  ~~~\n"
+apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+
+if [[ $? -ne 0 ]];then
+    log_error "!!! Failed installing Ubuntu base packages; aborting !!!"
+    exit 1
+fi
