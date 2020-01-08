@@ -1,7 +1,7 @@
 
 # Add additional source repos here
 #
-log "\n~~~ Installing Ubuntu base packages  ~~~\n"
+log_info "\n~~~ Installing Ubuntu base packages  ~~~\n"
 apt-get install -y \
     apt-transport-https \
     ca-certificates \
@@ -10,5 +10,12 @@ apt-get install -y \
 
 if [[ $? -ne 0 ]];then
     log_error "!!! Failed installing Ubuntu base packages; aborting !!!"
+    exit 1
+fi
+
+# Tweak sudoers to permit `sudo` group members paswordless execution
+log_info "\n~~~ Executing Ubuntu base customizations~~~\n"
+if ! sed "s/%sudo.*/%sudo    ALL=(ALL:ALL) NOPASSWD: ALL/" -iBAK /etc/sudoers;then
+    log_error "!!! Failed applying Ubuntu base sudo customization; aborting !!!"
     exit 1
 fi

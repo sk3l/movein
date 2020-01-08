@@ -9,8 +9,14 @@ if ! wget -O - https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 fi
 
 log_info "    - Installing Docker repo"
-if ! add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable";then
+if ! echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu disco stable" > /etc/apt/sources.list.d/docker.list;then
     log_error "!!! Failed installing Ubuntu dev repo Docker; aborting !!!"
+    exit 1
+fi
+
+log_info "\n~~~ Updating Ubuntu apt repos  ~~~\n"
+if ! apt-get update; then
+    log_error "!!! Failed updating Ubuntu apt data !!!"
     exit 1
 fi
 
@@ -22,7 +28,7 @@ if ! wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -;the
 fi
 
 log_info "    - Installing Clang repo"
-if ! add-apt-repository "deb http://apt.llvm.org/disco/ llvm-toolchain-disco main";then
+if ! echo "deb http://apt.llvm.org/disco/ llvm-toolchain-disco main" > /etc/apt/sources.list.d/clang.list;then
     log_error "!!! Failed installing Ubuntu dev repo LLVM; aborting !!!"
     exit 1
 fi
@@ -57,3 +63,10 @@ if [[ $? -ne 0 ]];then
     exit 1
 fi
 
+if [[ ! -z "$BASE_USER" ]]; then
+    log_info "\n~~~ Adding ${BASE_USER} to docker group ~~~\n"
+    if ! usermod -a -G docker $BASE_USER; then
+        log_error "!!! Failed adding base user ${BASE_USER} to docker group !!!\n"
+        exit 1
+    fi
+fi
