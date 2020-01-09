@@ -37,3 +37,20 @@ if [[ -f "modules/sk3lshell/dot-files/.bashrc_local_$OS_TYPE" ]]; then
     cp "modules/sk3lshell/dot-files/.bashrc_local_$OS_TYPE" $BASE_HOME/
 fi
 
+# Create SSH environment
+# TO DO - probably a more elegant way to populate authorized_keys than env var
+# e.g. file path as env var? file path as script arg?
+log_info "   - Configuring base user's SSH environment"
+if [[ ! -d "$BASE_HOME/.ssh" ]]; then
+    log_info "* Creating .ssh folder *"
+    mkdir -m 700 $BASE_HOME/.ssh
+    if [[ -n "$BASE_SSH_KEY" ]]; then
+        log_info "* Creating authorized_keys *"
+        echo "$BASE_SSH_KEY" > "$BASE_HOME/.ssh/authorized_keys"
+        chmod 600 "$BASE_HOME/.ssh/authorized_keys"
+    fi
+    chown -R $BASE_USER:$BASE_USER $BASE_HOME/.ssh
+else
+    log_info "* Found existing SSH environment; skipping *"
+fi
+
