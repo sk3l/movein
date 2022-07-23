@@ -18,11 +18,25 @@ NO_COLOR="\033[0m"
 INFO_COLOR="\033[1;32m"
 ERR_COLOR="\033[0;31m"
 
-function log_info {
+function run_as_sudo() {
+    cmd=$1
+    print_cmd=${2:0}
+
+    if [[ ${print_cmd} -eq 1 ]];then
+        echo -e "${cmd}"
+    fi
+
+    if [[ "$EUID" -ne 0 ]];then
+       cmd="sudo ${cmd}"
+    fi
+    eval ${cmd}
+}
+
+function log_info() {
     echo -e "${INFO_COLOR}$1${NO_COLOR}"
 }
 
-function log_error {
+function log_error() {
     echo -e "${ERR_COLOR}$1${NO_COLOR}"
 }
 
@@ -67,9 +81,12 @@ if [[ -f /etc/redhat-release ]]; then
         log_info "* Detected Red Hat Enterprise Linux distro *"
 	    OS_TYPE="rhel"
     fi
-elif lsb_release -a 2>&1 | grep -q "Ubuntu"; then
+elif lsb_release -i -s 2>&1 | grep -q "Ubuntu"; then
 	log_info "* Detected Ubuntu distro *"
 	OS_TYPE="ubuntu"
+elif lsb_release -i -s 2>&1 | grep -q "Debian"; then
+	log_info "* Detected Debian distro *"
+	OS_TYPE="debian"
 else
 	log_error "!!! Detected unknown distro!!!"
     log_error "Aborting movein due to unrecognized OS"
