@@ -18,6 +18,20 @@ NO_COLOR="\033[0m"
 INFO_COLOR="\033[1;32m"
 ERR_COLOR="\033[0;31m"
 
+function prompt_user() {
+    local action=$1
+    local choice=0
+    while true; do
+        read -p "Do you wish to ${action}? " yn
+        case $yn in
+            [Yy]* ) choice=1; break;;
+            [Nn]* ) break;;
+	    * ) echo "Please answer (Y)es or (N)o.";;
+        esac
+    done
+    echo ${choice}
+}
+
 function run_as_sudo() {
     cmd=$1
     print_cmd=${2:0}

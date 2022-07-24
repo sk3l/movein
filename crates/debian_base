@@ -10,10 +10,13 @@ BASE_PACKAGES=(
     "fuse"
     "nautilus"
     "net-tools"
+    "openssh-server"
+    "openssh-sftp-server"
     "sed"
     "sshfs"
     "smbclient"
     "software-properties-common"
+    "tmux"
 )
 
 INSTALL_PACKAGES=()

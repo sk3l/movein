@@ -1,0 +1,119 @@
+DEV_PACKAGES=(
+    "cmake"
+    "build-essential"
+    "git"
+    "npm"
+    "python3-pip"
+    "python3-setuptools"
+)
+
+log_info "\n(movein)[I] - Installing Debian dev repositories"
+
+inst_docker=$(prompt_user "install Docker")
+if [[ ${inst_docker} -eq 1 ]];then
+    # Docker repos
+    log_info "            - Installing Docker repo GPG key"
+    CMD="wget -O - https://download.docker.com/linux/ubuntu/gpg | apt-key add -"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "(movein)[E] - Failed installing GPG keys for Debian dev repo Docker; aborting"
+        return 1
+    fi
+
+    log_info "            - Installing Docker repo"
+    CMD="echo \"deb [arch=amd64] https://download.docker.com/linux/ubuntu disco stable\"\
+      > /etc/apt/sources.list.d/docker.list"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "(movein)[E] - Failed installing Debian dev repo Docker; aborting"
+        return 1
+    fi
+    DEV_PACKAGES+=( "docker-ce" )
+fi
+
+inst_clang=$(prompt_user "install Clang")
+if [[ ${inst_clang} -eq 1 ]];then
+    # Clang repos
+    log_info "            - Installing Clang repo GPG key"
+    CMD="wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "(movein)[E] - Failed installing GPG keys for Debian dev repo LLVM; aborting"
+        return 1
+    fi
+
+    log_info "            - Installing Clang repo"
+    CMD="echo \"deb http://apt.llvm.org/disco/ llvm-toolchain-disco main\"\
+       > /etc/apt/sources.list.d/clang.list"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "(movein)[E] - Failed installing Debian dev repo LLVM; aborting"
+        return 1
+    fi
+    DEV_PACKAGES+=( "clang-format" )
+    DEV_PACKAGES+=( "clang-tidy" )
+    DEV_PACKAGES+=( "clang-tools" )
+    DEV_PACKAGES+=( "clang" )
+fi
+
+log_info "\n(movein)[I] - Updating Debian apt repos"
+CMD="apt update"
+run_as_sudo "${CMD}" 1
+if [[ $? -ne 0 ]];then
+    log_error "(movein)[E] - Failed updating Debian apt data; aborting"
+    return 1
+fi
+
+INSTALL_PACKAGES=()
+log_info "\n(movein)[I] - Checking Debian dev packages"
+for pkg in ${DEV_PACKAGES[@]};
+do
+    PKG_NAME="            - $pkg"
+    if ! dpkg --no-pager -l $pkg > /dev/null 2>&1;then
+        PKG_NAME+=" (missing; will install)"
+        INSTALL_PACKAGES+=( $pkg )
+    else
+        PKG_NAME+=" (exists)"
+    fi
+    log_info "${PKG_NAME}"
+done
+
+log_info "\n(movein)[I] - Installing Debian dev packages"
+CMD="apt-get install -y ${INSTALL_PACKAGES[@]}"
+run_as_sudo "${CMD}" 1
+if [[ $? -ne 0 ]];then
+    log_error "\n(movein)[EE] - Failed installing Debian dev packages; aborting"
+    return 1
+fi
+
+EDITOR="nvim"
+EDITOR_PATH="/usr/local/sbin"
+log_info "\n(movein)[I] - Installing Debian dev editor"
+if [[ ! -L "${EDITOR_PATH}/${EDITOR}" ]];then
+    EDITOR_URL="https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage"
+    CMD="wget -O ${EDITOR_PATH}/nvim.appimage ${EDITOR_URL}"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "\n(movein)[EE] - Failed installing Debian dev editor; aborting"
+        return 1
+    fi
+
+    CMD="ln -s ${EDITOR_PATH}/nvim.appimage ${EDITOR_PATH}/nvim;"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "\n(movein)[EE] - Failed installing Debian dev editor; aborting"
+        return 1
+    fi
+
+fi
+log_info "\n(movein)[I] - Successfully installed Debian dev packages"
+
+if [[ $inst_docker == "1" && ! -z "$BASE_USER" ]]; then
+    log_info "            - Adding ${BASE_USER} to docker group"
+    CMD="usermod -a -G docker $BASE_USER"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+         log_error "\n(movein)[EE] - Failed adding base user ${BASE_USER} to docker group"
+         return 1
+     fi
+ fi
