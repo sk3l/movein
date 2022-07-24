@@ -8,22 +8,26 @@ if [[ -z "$BASE_HOME" ]]; then
 fi
 
 # Create base user
-log_info "   - Creating base user login ${BASE_USER}"
+log_info "\n(movein)[I] - Creating base user login ${BASE_USER}"
 if getent passwd ${BASE_USER} > /dev/null; then
     log_info "   - Base user ${BASE_USER} already exists"
 else
-    if ! useradd -m -s /bin/bash $BASE_USER > /dev/null; then
-        log_error "!!! Failed creating base user ${BASE_USER} !!!\n"
-        exit 1
+    CMD="useradd -m -s /bin/bash $BASE_USER > /dev/null"
+    run_as_sudo ${CMD} 1
+    if [[ $? -ne 0 ]];then
+        log_error "(movein)[E] - Failed creating base user ${BASE_USER}"
+        return 1
     fi
 fi
 
 if [[ ! -z "$BASE_GROUPS" ]]; then
     # Add user to groups
     log_info "   - Adding base user ${BASE_USER} to groups ${BASE_GROUPS}"
-    if ! usermod -a -G ${BASE_GROUPS} $BASE_USER; then
-        log_error "!!! Failed adding base user ${BASE_USER} groups !!!\n"
-        exit 1
+    CMD="usermod -a -G ${BASE_GROUPS} $BASE_USER"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "(movein)[E] - Failed adding base user ${BASE_USER} groups\n"
+        return 1
     fi
 fi
 
@@ -40,17 +44,17 @@ fi
 # Create SSH environment
 # TO DO - probably a more elegant way to populate authorized_keys than env var
 # e.g. file path as env var? file path as script arg?
-log_info "   - Configuring base user's SSH environment"
+log_info "             - Configuring base user's SSH environment"
 if [[ ! -d "$BASE_HOME/.ssh" ]]; then
-    log_info "* Creating .ssh folder *"
+    log_info "             - Creating .ssh folder"
     mkdir -m 700 $BASE_HOME/.ssh
     if [[ -n "$BASE_SSH_KEY" ]]; then
-        log_info "* Creating authorized_keys *"
+        log_info "             - Creating authorized_keys"
         echo "$BASE_SSH_KEY" > "$BASE_HOME/.ssh/authorized_keys"
         chmod 600 "$BASE_HOME/.ssh/authorized_keys"
     fi
     chown -R $BASE_USER:$BASE_USER $BASE_HOME/.ssh
 else
-    log_info "* Found existing SSH environment; skipping *"
+    log_info "             - Found existing SSH environment; skipping"
 fi
 

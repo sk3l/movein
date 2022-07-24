@@ -8,25 +8,18 @@ if [[ -z "$BASE_HOME" ]]; then
 	exit 1
 fi
 
-log_info "\n~~~ Verifying Git ~~~\n"
+log_info "\n(movein)[I] - Verifying Git"
 
 GIT=$(which git)
 if [[ $? -ne 0 ]]; then
-	log_error "!!! No Git detected; check and retry !!!"
-	exit 1
+	log_error "(movein)[E] - No Git detected; check and retry !!!"
+	return 1
 fi
 GITVER=$(git --version)
 log_info "    - Found Git, $GITVER"
 
-# If running as different user than $BASE_USER, use sudo
-SUDO=""
-if [[ "$USER" != "$BASE_USER" ]];then
-    log_info "    - enabling sudo as $BASE_USER"
-    SUDO="/bin/sudo -i -u $BASE_USER"    
-fi
-
 if [[ -z "$GIT_USER" ]]; then
-    GIT_USER="Michael Skelton"
+    GIT_USER="$USER"
 fi
 
 if [[ -z "$GIT_EMAIL" ]]; then
@@ -34,29 +27,38 @@ if [[ -z "$GIT_EMAIL" ]]; then
 fi
 
 log_info "    - Setting .gitconfig"
-$SUDO $GIT config --global --add user.name "$GIT_USER"
-$SUDO $GIT config --global --add user.email "$GIT_EMAIL"
+CMD="$GIT config --global --add user.name \"$GIT_USER\""
+run_as_user ${CMD} ${BASE_USER}
+CMD="$GIT config --global --add user.email "$GIT_EMAIL""
+run_as_user ${CMD} ${BASE_USER}
 
-if [[ ! -d $BASE_HOME/Code ]]; then
-	log_info "\n~~~ Creating ~/Code directory ~~~\n"
-	$SUDO mkdir -p $BASE_HOME/Code
+code_dir="code"
+if [[ ! -d $BASE_HOME/[cC]ode ]]; then
+    log_info "\n(movein)[I] - Creating code directory"
+    if [[-z $XDG_CURRENT_DESKTOP ]];then
+        code_dir="Code"
+    fi
+    CMD="mkdir -p $BASE_HOME/${code_dir}"
+    run_as_user ${CMD} ${BASE_USER}
 fi
 
 # Copy movein to BASE_USER's Code directory
-if [[ ! -d $BASE_HOME/Code/movein ]]; then
-    cp -R $(pwd) $BASE_HOME/Code
-    chown -R $BASE_USER:$BASE_USER $BASE_HOME/Code/movein
+if [[ ! -d $BASE_HOME/${code_dir}/movein ]]; then
+    CMD="cp -R $(pwd) $BASE_HOME/${code_dir}"
+    run_as_user ${CMD} ${BASE_USER}
 fi
 
-log_info "~~~ Installing ViM config ~~~\n"
+log_info "\n(movein)[I] - Installing ViM config"
 
-[[ ! -d $BASE_HOME/.vim ]] && $SUDO mkdir $BASE_HOME/.vim
+if [[ ! -d $BASE_HOME/.vim ]];then
+    run_as_user "mkdir $BASE_HOME/.vim" ${BASE_USER}
+    run_as_user "cp $BASE_HOME/Code/movein/modules/vim-conf/conf/.vimrc $BASE_HOME" ${BASE_USER}
+    run_as_user "cp -R $BASE_HOME/Code/movein/modules/vim-conf/conf $BASE_HOME/.vim/" ${BASE_USER}
+    run_as_user "cp -R $BASE_HOME/Code/movein/modules/vim-conf/colors $BASE_HOME/.vim/" ${BASE_USER}
+    run_as_user "cp -R $BASE_HOME/Code/movein/modules/vim-conf/neovim/init.vim $BASE_HOME/.config/nvim" ${BASE_USER}
+fi
 
-$SUDO cp $BASE_HOME/Code/movein/modules/vim-conf/conf/.vimrc $BASE_HOME
-$SUDO cp -R $BASE_HOME/Code/movein/modules/vim-conf/conf $BASE_HOME/.vim/
-$SUDO cp -R $BASE_HOME/Code/movein/modules/vim-conf/colors $BASE_HOME/.vim/
+log_info "\n(movein)[I] - Installing tmux config"
 
-log_info "~~~ Installing tmux config ~~~\n"
-
-$SUDO cp $BASE_HOME/Code/movein/modules/tmux-conf/.tmux.conf $BASE_HOME
+run_as_user  "cp $BASE_HOME/Code/movein/modules/tmux-conf/.tmux.conf $BASE_HOME" ${BASE_USER}
 

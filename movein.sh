@@ -32,6 +32,21 @@ function prompt_user() {
     echo ${choice}
 }
 
+function run_as_user() {
+    cmd=$1
+    user=$2
+    print_cmd=${3:0}
+
+    if [[ ${print_cmd} -eq 1 ]];then
+        echo -e "${cmd}"
+    fi
+
+    if [[ ${user} != ${USER} ]];then
+       cmd="sudo -u ${user} ${cmd}"
+    fi
+    eval ${cmd}
+}
+
 function run_as_sudo() {
     cmd=$1
     print_cmd=${2:0}
@@ -81,9 +96,9 @@ shift "$((OPTIND-1))"
 # Write output to the log file and stdout
 exec &> >(tee -a "$LOG")
 
-log_info "\n====== Starting movein ======"
+log_info "\n(movein)[I] - Starting movein"
 
-log_info "\n~~~ Examining host Linux distro ~~~\n"
+log_info "\n(movein)[I] - Examining host Linux distro"
 
 OS_TYPE=""
 OS_VERSION=""
@@ -102,19 +117,19 @@ elif lsb_release -i -s 2>&1 | grep -q "Debian"; then
 	log_info "* Detected Debian distro *"
 	OS_TYPE="debian"
 else
-	log_error "!!! Detected unknown distro!!!"
+    log_error "(movein)[E] - Detected unknown distro"
     log_error "Aborting movein due to unrecognized OS"
-    exit 1
+    return 1
 fi
 
 # Custom scripts from argv are sourced here
 for SCRIPT in $@; do
-    log_info "\n~~~ Sourcing script $SCRIPT ~~~\n"
+    log_info "\n(movein)[I] - Sourcing script $SCRIPT"
     if [[ ! -f ./crates/$SCRIPT ]]; then
-	    log_error "!!! No crate named $SCRIPT found; skipping !!!"
+	log_error "(movein)[W] - No crate named $SCRIPT found; skipping"
     else
         source ./crates/$SCRIPT
     fi
 done
 
-log_info "\n====== Movein has completed ======\n"
+log_info "\n(movein)[I] - Movein has completed"
