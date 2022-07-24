@@ -1,3 +1,5 @@
+REPO_DIR=$(dirname $(readlink -f $0))
+
 if [[ -z "$BASE_USER" ]]; then
 	log_error "!!! Required variable BASE_USER unset; aborting !!!"
 	exit 1
@@ -28,37 +30,38 @@ fi
 
 log_info "    - Setting .gitconfig"
 CMD="$GIT config --global --add user.name \"$GIT_USER\""
-run_as_user ${CMD} ${BASE_USER}
+run_as_user "${CMD}" ${BASE_USER}
 CMD="$GIT config --global --add user.email "$GIT_EMAIL""
-run_as_user ${CMD} ${BASE_USER}
+run_as_user "${CMD}" ${BASE_USER}
 
 code_dir="code"
 if [[ ! -d $BASE_HOME/[cC]ode ]]; then
     log_info "\n(movein)[I] - Creating code directory"
-    if [[-z $XDG_CURRENT_DESKTOP ]];then
+    if [[ -z $XDG_CURRENT_DESKTOP ]];then
         code_dir="Code"
     fi
     CMD="mkdir -p $BASE_HOME/${code_dir}"
-    run_as_user ${CMD} ${BASE_USER}
+    run_as_user "${CMD}" ${BASE_USER}
 fi
 
 # Copy movein to BASE_USER's Code directory
 if [[ ! -d $BASE_HOME/${code_dir}/movein ]]; then
     CMD="cp -R $(pwd) $BASE_HOME/${code_dir}"
-    run_as_user ${CMD} ${BASE_USER}
+    run_as_user "${CMD}" ${BASE_USER}
 fi
 
 log_info "\n(movein)[I] - Installing ViM config"
 
 if [[ ! -d $BASE_HOME/.vim ]];then
     run_as_user "mkdir $BASE_HOME/.vim" ${BASE_USER}
-    run_as_user "cp $BASE_HOME/Code/movein/modules/vim-conf/conf/.vimrc $BASE_HOME" ${BASE_USER}
-    run_as_user "cp -R $BASE_HOME/Code/movein/modules/vim-conf/conf $BASE_HOME/.vim/" ${BASE_USER}
-    run_as_user "cp -R $BASE_HOME/Code/movein/modules/vim-conf/colors $BASE_HOME/.vim/" ${BASE_USER}
-    run_as_user "cp -R $BASE_HOME/Code/movein/modules/vim-conf/neovim/init.vim $BASE_HOME/.config/nvim" ${BASE_USER}
 fi
+run_as_user "cp ${REPO_DIR}/modules/vim-conf/conf/.vimrc $BASE_HOME" ${BASE_USER}
+run_as_user "cp -R ${REPO_DIR}/modules/vim-conf/conf $BASE_HOME/.vim/" ${BASE_USER}
+run_as_user "cp -R ${REPO_DIR}/modules/vim-conf/colors $BASE_HOME/.vim/" ${BASE_USER}
+run_as_user "cp -R ${REPO_DIR}/modules/vim-conf/conf/neovim/.vimrc_ale $BASE_HOME/.vim/conf" ${BASE_USER}
+run_as_user "cp -R ${REPO_DIR}/modules/vim-conf/conf/neovim/init.vim $BASE_HOME/.config/nvim" ${BASE_USER}
 
 log_info "\n(movein)[I] - Installing tmux config"
 
-run_as_user  "cp $BASE_HOME/Code/movein/modules/tmux-conf/.tmux.conf $BASE_HOME" ${BASE_USER}
+run_as_user  "cp ${REPO_DIR}/modules/tmux-conf/.tmux.conf $BASE_HOME" ${BASE_USER}
 
