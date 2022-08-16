@@ -52,14 +52,26 @@ fi
 
 log_info "\n(movein)[I] - Installing ViM config"
 
-if [[ ! -d $BASE_HOME/.vim ]];then
-    run_as_user "mkdir $BASE_HOME/.vim" ${BASE_USER}
+if [[ ! -d $BASE_HOME/.vim/colors ]];then
+    run_as_user "mkdir -p $BASE_HOME/.vim/colors" ${BASE_USER}
 fi
-run_as_user "cp ${REPO_DIR}/modules/vim-conf/conf/.vimrc $BASE_HOME" ${BASE_USER}
-run_as_user "cp -R ${REPO_DIR}/modules/vim-conf/conf $BASE_HOME/.vim/" ${BASE_USER}
-run_as_user "cp -R ${REPO_DIR}/modules/vim-conf/colors $BASE_HOME/.vim/" ${BASE_USER}
-run_as_user "cp -R ${REPO_DIR}/modules/vim-conf/conf/neovim/.vimrc_ale $BASE_HOME/.vim/conf" ${BASE_USER}
-run_as_user "cp -R ${REPO_DIR}/modules/vim-conf/conf/neovim/init.vim $BASE_HOME/.config/nvim" ${BASE_USER}
+
+if [[ ! -d $BASE_HOME/.vim/conf ]];then
+    run_as_user "mkdir -p $BASE_HOME/.vim/conf" ${BASE_USER}
+fi
+
+if [[ ! -d $BASE_HOME/.config/nvim ]];then
+    run_as_user "mkdir -p $BASE_HOME/.config/nvim" ${BASE_USER}
+fi
+
+run_as_user "cp -R ${REPO_DIR}/modules/vim-conf/colors $BASE_HOME/.vim" ${BASE_USER}
+run_as_user "cp -R ${REPO_DIR}/modules/vim-conf/conf/vimrc_ale $BASE_HOME/.vim/conf/.vimrc_ale" ${BASE_USER}
+run_as_user "cp -R ${REPO_DIR}/modules/vim-conf/conf/vimrc_nerdtree $BASE_HOME/.vim/conf/.vimrc_nerdtree" ${BASE_USER}
+run_as_user "cp -R ${REPO_DIR}/modules/vim-conf/conf/vimrc_init_nvim $BASE_HOME/.config/nvim/init.vim" ${BASE_USER}
+
+if [[ ! -d $BASE_HOME/.vim/bundle ]];then
+    run_as_user "git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim" ${BASE_USER}
+fi
 
 log_info "\n(movein)[I] - Installing tmux config"
 
