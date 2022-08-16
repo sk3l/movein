@@ -10,10 +10,13 @@ BASE_PACKAGES=(
     "fuse"
     "nautilus"
     "net-tools"
+    "openssh-server"
+    "openssh-sftp-server"
     "sed"
     "sshfs"
     "smbclient"
     "software-properties-common"
+    "tmux"
 )
 
 INSTALL_PACKAGES=()
@@ -30,8 +33,15 @@ do
     log_info "${PKG_NAME}"
 done
 
+if [[ -z ${apt_proxy} ]];then
+    set_apt_proxy=$(prompt_user "set apt HTTP proxy")
+    if [[ ${set_apt_proxy} -eq 1 ]];then
+        export apt_proxy="http_proxy=$(read_user_variable 'apt HTTP proxy')"
+    fi
+fi
+
 log_info "\n(movein)[I] - Installing Ubuntu base packages"
-CMD="apt-get install -y ${INSTALL_PACKAGES[@]}"
+CMD="${apt_proxy} apt-get install -y ${INSTALL_PACKAGES[@]}"
 run_as_sudo "${CMD}" 1
 if [[ $? -ne 0 ]];then
     log_error "\n(movein)[EE] - Failed installing Ubuntu base packages; aborting"

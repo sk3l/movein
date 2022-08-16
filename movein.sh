@@ -32,6 +32,17 @@ function prompt_user() {
     echo ${choice}
 }
 
+function read_user_variable() {
+    local variable=$1
+    while true; do
+        read -p "Please enter a value for ${variable}" value
+        if ! [[ -z ${value} ]];then
+            break;
+	fi
+    done
+    echo ${value}
+}
+
 function run_as_user() {
     cmd=$1
     user=$2
@@ -56,7 +67,7 @@ function run_as_sudo() {
     fi
 
     if [[ "$EUID" -ne 0 ]];then
-       cmd="sudo ${cmd}"
+       cmd="sudo -E ${cmd}"
     fi
     eval ${cmd}
 }
