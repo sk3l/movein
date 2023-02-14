@@ -131,13 +131,3 @@ if [[ $inst_docker == "1" && ! -z "$BASE_USER" ]]; then
          return 1
      fi
  fi
-
-if [[ $inst_docker == "1" && ! -z "$BASE_USER" ]]; then
-    log_info "            - Adding ${BASE_USER} to docker group"
-    CMD="usermod -a -G docker $BASE_USER"
-    run_as_sudo "${CMD}" 1
-    if [[ $? -ne 0 ]];then
-         log_error "\n(movein)[EE] - Failed adding base user ${BASE_USER} to docker group"
-         return 1
-     fi
- fi
