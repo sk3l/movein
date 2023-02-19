@@ -105,6 +105,13 @@ if [[ ! -L "${EDITOR_PATH}/${EDITOR}" ]];then
         return 1
     fi
 
+    CMD="chmod +x ${EDITOR_PATH}/nvim.appimage"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "\n(movein)[EE] - Failed installing Ubuntu dev editor; aborting"
+        return 1
+    fi
+
     CMD="ln -s ${EDITOR_PATH}/nvim.appimage ${EDITOR_PATH}/nvim;"
     run_as_sudo "${CMD}" 1
     if [[ $? -ne 0 ]];then
