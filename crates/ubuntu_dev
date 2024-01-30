@@ -2,7 +2,6 @@ DEV_PACKAGES=(
     "cmake"
     "build-essential"
     "git"
-    "npm"
     "python3-pip"
     "python3-setuptools"
 )
@@ -97,6 +96,15 @@ EDITOR="nvim"
 EDITOR_PATH="/usr/local/sbin"
 log_info "\n(movein)[I] - Installing Ubuntu dev editor"
 if [[ ! -L "${EDITOR_PATH}/${EDITOR}" ]];then
+    NVIM_PACKAGES=(
+       "libfuse-dev"
+    )
+    CMD="${apt_proxy} apt-get install -y ${INSTALL_PACKAGES[@]}"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+       log_error "\n(movein)[EE] - Failed installing Ubuntu nvim packages; aborting"
+       return 1
+    fi
     EDITOR_URL="https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage"
     CMD="wget -O ${EDITOR_PATH}/nvim.appimage ${EDITOR_URL}"
     run_as_sudo "${CMD}" 1
