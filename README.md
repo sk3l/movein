@@ -1,4 +1,7 @@
-# movein - make yourself @ $HOME
+<h1 align="center">
+<img src="https://github.com/sk3l/movein/assets/4662876/9dff0772-1d88-4b7d-bf88-03f138b5b9c7" alt="dice">
+     <div><strong>movein - make yourself @ $HOME</strong></div>
+</h1>
 
 This is a Bash script intended to automate provisioning of a fully functional development environment on a new system. What does 'fully functional' imply?
 
