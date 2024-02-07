@@ -1,0 +1,102 @@
+# TODO - automate install of latest version of Python3
+DEV_PACKAGES=(
+    "cmake3"
+    "clang"
+    "diffutils"
+    "fuse3-devel"
+    "git"
+    "llvm"
+)
+
+log_info "\n(movein)[I] - Updating Rocky repos"
+CMD="dnf update"
+run_as_sudo "${CMD}" 1
+if [[ $? -ne 0 ]];then
+    log_error "(movein)[E] - Failed updating Rocky DNF data; aborting"
+    return 1
+fi
+
+if [[ ${#INSTALL_PACKAGES[@]} -gt 0 ]];then
+   log_info "\n(movein)[I] - Installing Rocky Development Group packages"
+   CMD="dnf group install -y \"Development Tools\""
+   run_as_sudo "${CMD}" 1
+   if [[ $? -ne 0 ]];then
+      log_error "\n(movein)[EE] - Failed installing Rocky dev packages; aborting"
+      return 1
+   fi
+fi
+
+INSTALL_PACKAGES=()
+log_info "\n(movein)[I] - Checking Rocky dev packages"
+for pkg in ${DEV_PACKAGES[@]};
+do
+    PKG_NAME="            - $pkg"
+    if ! rpm --quiet -q $pkg > /dev/null 2>&1;then
+        PKG_NAME+=" (missing; will install)"
+        INSTALL_PACKAGES+=( $pkg )
+    else
+        PKG_NAME+=" (exists)"
+    fi
+    log_info "${PKG_NAME}"
+done
+
+if [[ ${#INSTALL_PACKAGES[@]} -gt 0 ]];then
+   log_info "\n(movein)[I] - Installing Rocky dev packages"
+   CMD="dnf install -y ${INSTALL_PACKAGES[@]}"
+   run_as_sudo "${CMD}" 1
+   if [[ $? -ne 0 ]];then
+      log_error "\n(movein)[EE] - Failed installing Rocky dev packages; aborting"
+      return 1
+   fi
+fi
+
+# Prompt to install Container Management group 
+inst_scl=$(prompt_user "install Rocky Container Management group")
+if [[ ${inst_scl} -eq 1 ]];then
+    CMD="dnf group install -y \"Container Management\""
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "!!! Failed installing Container Management group; aborting !!!"
+        exit 1
+    fi
+fi
+
+# Prompt to install Virtualization Host environment
+inst_scl=$(prompt_user "install Rocky Virtualization Host group")
+if [[ ${inst_scl} -eq 1 ]];then
+    CMD="dnf group install -y \"Virtualization Host\""
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "!!! Failed installing Rocky Virtualization Host group; aborting !!!"
+        exit 1
+    fi
+fi
+
+EDITOR="nvim"
+EDITOR_PATH="/usr/local/sbin"
+log_info "\n(movein)[I] - Installing Rocky dev editor"
+if [[ ! -L "${EDITOR_PATH}/${EDITOR}" ]];then
+    EDITOR_URL="https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage"
+    CMD="wget --no-check-certificate -O ${EDITOR_PATH}/nvim.appimage ${EDITOR_URL}"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "\n(movein)[EE] - Failed installing Rocky dev editor; aborting"
+        return 1
+    fi
+
+    CMD="ln -s ${EDITOR_PATH}/nvim.appimage ${EDITOR_PATH}/nvim;"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "\n(movein)[EE] - Failed installing Rocky dev editor; aborting"
+        return 1
+    fi
+
+    CMD="chmod +x ${EDITOR_PATH}/nvim.appimage"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "(movein)[EE] - Failed installing Rocky dev editor; aborting"
+        exit 1
+    fi
+
+fi
+log_info "\n(movein)[I] - Successfully installed Rocky dev packages"

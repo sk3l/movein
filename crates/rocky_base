@@ -1,0 +1,85 @@
+# Add additional source repos here
+#
+BASE_PACKAGES=(
+    "ca-certificates"
+    "curl"
+    "grep"
+    "openssh-server"
+    "sed"
+    "tmux"
+)
+
+INSTALL_PACKAGES=()
+log_info "\n(movein)[I] - Checking Rocky base packages"
+for pkg in ${BASE_PACKAGES[@]};
+do
+    PKG_NAME="            - $pkg"
+    if ! rpm --quiet -q $pkg > /dev/null 2>&1;then
+        PKG_NAME+=" (missing; will install)"
+        INSTALL_PACKAGES+=( $pkg )
+    else
+        PKG_NAME+=" (exists)"
+    fi
+    log_info "${PKG_NAME}"
+done
+
+#if [[ -z ${apt_proxy} ]];then
+#    set_apt_proxy=$(prompt_user "set apt HTTP proxy")
+#    if [[ ${set_apt_proxy} -eq 1 ]];then
+#        export apt_proxy="http_proxy=$(read_user_variable 'apt HTTP proxy')"
+#    fi
+#fi
+
+if [[ ${#INSTALL_PACKAGES[@]} -gt 0 ]];then
+   log_info "\n(movein)[I] - Installing Rocky base packages"
+   CMD="dnf install -y ${INSTALL_PACKAGES[@]}"
+   run_as_sudo "${CMD}" 1
+   if [[ $? -ne 0 ]];then
+      log_error "\n(movein)[EE] - Failed installing Rocky base packages; aborting"
+      return 1
+   fi
+   log_info "\n(movein)[I] - Successfully installed Rocky base packages"
+fi
+
+# Prompt to install PowerTools CRB repo
+inst_scl=$(prompt_user "install Rocky CRB (PowerTools) repository")
+if [[ ${inst_scl} -eq 1 ]];then
+    CMD="dnf config-manager --set-enabled crb"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "!!! Failed enabling Rocky CRB (PowerTools) !!!"
+        exit 1
+    fi
+fi
+
+# Prompt to Install EPEL
+inst_epel=$(prompt_user "install Rocky EPEL repository")
+if [[ ${inst_epel} -eq 1 ]];then
+    CMD="dnf install -y epel-release"
+    run_as_sudo "${CMD}" 1
+    if [[ $? -ne 0 ]];then
+        log_error "!!! Failed installing Rocky EPEL !!!"
+        exit 1
+    fi
+fi
+
+log_info "\n(movein)[I] - Executing Rocky base customizations"
+
+# Tweak sudoers to permit `sudo` group members paswordless execution
+CUSTOM_NAME="            - sudo without password"
+CMD="grep -q \"sudo\s*ALL=(ALL) ALL\s*$\" /etc/sudoers"
+run_as_sudo "${CMD}"
+if [[ $? -eq 0 ]];then
+    CMD="sed \"s/%sudo.*/%sudo    ALL=(ALL:ALL) NOPASSWD: ALL/\" -iBAK /etc/sudoers"
+    run_as_sudo "${CMD}"
+    if [[ $? -ne 0 ]];then
+        CUSTOM_NAME+=" (failed)"
+    else
+        CUSTOM_NAME+=" (success)"
+    fi
+else
+    CUSTOM_NAME+=" (exists)"
+fi
+log_info "${CUSTOM_NAME}"
+
+log_info "\n(movein)[I] - Successfully set Rocky base customizations"
